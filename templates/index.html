@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Learning Assistant | Home</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-text">AI Learning Assistant</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="nav">
+        <div class="nav-inner">
+
+            <!-- Logo -->
+            <a href="index.html" class="logo">
+                <div class="logo-mark">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <span>AI Learning Assistant</span>
+            </a>
+
+            <!-- Navigation Links -->
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="chatbot.html">AI Assistant</a></li>
+                <li><a href="quiz.html">Quiz</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="tech.html">Tech Stack</a></li>
+            </ul>
+
+            <!-- Buttons -->
+            <div class="nav-cta">
+                <a href="#" class="btn btn-ghost">Sign In</a>
+                <a href="#" class="btn btn-primary">Get Started</a>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+
+        <canvas id="hero-canvas"></canvas>
+
+        <div class="hero-grid"></div>
+
+        <div class="hero-inner">
+
+            <div class="hero-badge">
+                <span class="dot"></span>
+                 Personalized Learning • Real-Time AI
+            </div>
+
+            <h1>
+                <span class="line">Learn Smarter With</span>
+                <span class="line grad">AI Learning Assistant</span>
+            </h1>
+
+            <p class="hero-sub">
+                A next-generation learning platform where students explore courses,
+                teachers upload lectures, and an AI assistant answers questions instantly.
+            </p>
+
+            <div class="hero-actions">
+                <a href="courses.html" class="btn btn-primary">
+                    Explore Courses
+                </a>
+
+                <a href="chatbot.html" class="btn btn-outline">
+                    AI Assistant
+                </a>
+            </div>
+
+            <div class="hero-stats">
+
+                <div class="stat-item">
+                    <div class="num" data-count="450">0</div>
+                    <div class="lbl">Courses</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="num" data-count="28">0</div>
+                    <div class="lbl">K Students</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="num" data-count="120">0</div>
+                    <div class="lbl">Teachers</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="num" data-count="98">0</div>
+                    <div class="lbl">Accuracy %</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Scripts -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script src="{{ url_for('static', filename='common.js') }}"></script>
+
+<script src="{{ url_for('static', filename='home.js') }}"></script>
+</body>
+
+</html>

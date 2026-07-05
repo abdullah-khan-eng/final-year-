@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Courses | AI Learning Assistant</title>
+
+    <link rel="stylesheet" href="../static/style.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+          
+
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<nav id="nav">
+
+    <div class="nav-inner">
+
+         <a href="index.html" class="logo">
+
+            <div class="logo-mark">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+
+            <span>AI Learning Assistant</span>
+
+        </a>
+
+       <ul class="nav-links">
+
+    <li><a href="index.html">Home</a></li>
+
+    <li><a href="features.html">Features</a></li>
+
+    <li><a href="courses.html">Courses</a></li>
+
+    <li><a href="chatbot.html">AI Assistant</a></li>
+
+    <li><a href="quiz.html">Quiz</a></li>
+
+    <li><a href="dashboard.html">Dashboard</a></li>
+
+    <li><a href="tech.html">Tech Stack</a></li>
+
+</ul>
+    </div>
+
+</nav>
+
+
+
+
+
+<!-- ================= COURSES ================= -->
+
+<section id="courses">
+
+<!--
+
+YAHAN TUM APNA PURA
+
+<!-- ============ COURSES ============ -->
+
+<section id="courses">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag"><i class="fa-solid fa-graduation-cap"></i>Course Catalog</span>
+      <h2 class="sec-title">Explore <span class="grad">Popular Courses</span></h2>
+      <p class="sec-desc">Hand-picked courses from world-class instructors. Choose your path and start learning today.</p>
+    </div>
+
+    <div class="course-filters reveal">
+      <button class="filter-btn active" data-filter="all">All Courses</button>
+      <button class="filter-btn" data-filter="programming">Programming</button>
+      <button class="filter-btn" data-filter="data">Data Science</button>
+      <button class="filter-btn" data-filter="design">Design</button>
+      <button class="filter-btn" data-filter="business">Business</button>
+      <button class="filter-btn" data-filter="ai">AI & ML</button>
+    </div>
+
+    <div class="courses-grid" id="coursesGrid">
+      <div class="course-card reveal" data-cat="programming" style="--c1:#8b5cf6;--c2:#22d3ee">
+        <div class="course-thumb">
+          <i class="fa-brands fa-python"></i>
+          <span class="course-level">Beginner</span>
+          <span class="course-duration"><i class="fa-regular fa-clock"></i>32h</span>
+        </div>
+        <div class="course-body">
+          <div class="course-cat">Programming</div>
+          <h3>Complete Python Mastery</h3>
+          <div class="course-instructor">
+            <div class="avatar">DK</div>
+            <span>Dr. Kiran Rao</span>
+          </div>
+          <div class="course-meta">
+            <div class="course-rating">
+              <i class="fa-solid fa-star"></i>4.9
+              <span>(2.1k)</span>
+            </div>
+            <span>14,520 students</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card reveal" data-cat="ai" style="--c1:#f472b6;--c2:#8b5cf6">
+        <div class="course-thumb">
+          <i class="fa-solid fa-brain"></i>
+          <span class="course-level">Advanced</span>
+          <span class="course-duration"><i class="fa-regular fa-clock"></i>48h</span>
+        </div>
+        <div class="course-body">
+          <div class="course-cat">AI & Machine Learning</div>
+          <h3>Deep Learning with PyTorch</h3>
+          <div class="course-instructor">
+            <div class="avatar">SP</div>
+            <span>Prof. Sara Patel</span>
+          </div>
+          <div class="course-meta">
+            <div class="course-rating">
+              <i class="fa-solid fa-star"></i>4.8
+              <span>(1.8k)</span>
+            </div>
+            <span>9,340 students</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card reveal" data-cat="data" style="--c1:#22d3ee;--c2:#34d399">
+        <div class="course-thumb">
+          <i class="fa-solid fa-chart-data"></i>
+          <span class="course-level">Intermediate</span>
+          <span class="course-duration"><i class="fa-regular fa-clock"></i>28h</span>
+        </div>
+        <div class="course-body">
+          <div class="course-cat">Data Science</div>
+          <h3>Data Analysis & Visualization</h3>
+          <div class="course-instructor">
+            <div class="avatar">MR</div>
+            <span>Dr. Marcus Reed</span>
+          </div>
+          <div class="course-meta">
+            <div class="course-rating">
+              <i class="fa-solid fa-star"></i>4.9
+              <span>(1.5k)</span>
+            </div>
+            <span>7,210 students</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card reveal" data-cat="design" style="--c1:#fbbf24;--c2:#f472b6">
+        <div class="course-thumb">
+          <i class="fa-solid fa-palette"></i>
+          <span class="course-level">Beginner</span>
+          <span class="course-duration"><i class="fa-regular fa-clock"></i>22h</span>
+        </div>
+        <div class="course-body">
+          <div class="course-cat">Design</div>
+          <h3>UI/UX Design Fundamentals</h3>
+          <div class="course-instructor">
+            <div class="avatar">AL</div>
+            <span>Aisha Lin</span>
+          </div>
+          <div class="course-meta">
+            <div class="course-rating">
+              <i class="fa-solid fa-star"></i>4.7
+              <span>(980)</span>
+            </div>
+            <span>5,680 students</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card reveal" data-cat="programming" style="--c1:#34d399;--c2:#22d3ee">
+        <div class="course-thumb">
+          <i class="fa-brands fa-js"></i>
+          <span class="course-level">Intermediate</span>
+          <span class="course-duration"><i class="fa-regular fa-clock"></i>36h</span>
+        </div>
+        <div class="course-body">
+          <div class="course-cat">Programming</div>
+          <h3>Full-Stack JavaScript</h3>
+          <div class="course-instructor">
+            <div class="avatar">JT</div>
+            <span>James Torres</span>
+          </div>
+          <div class="course-meta">
+            <div class="course-rating">
+              <i class="fa-solid fa-star"></i>4.8
+              <span>(1.6k)</span>
+            </div>
+            <span>8,920 students</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card reveal" data-cat="business" style="--c1:#8b5cf6;--c2:#fbbf24">
+        <div class="course-thumb">
+          <i class="fa-solid fa-briefcase"></i>
+          <span class="course-level">All Levels</span>
+          <span class="course-duration"><i class="fa-regular fa-clock"></i>18h</span>
+        </div>
+        <div class="course-body">
+          <div class="course-cat">Business</div>
+          <h3>Digital Marketing Strategy</h3>
+          <div class="course-instructor">
+            <div class="avatar">EK</div>
+            <span>Elena Kovac</span>
+          </div>
+          <div class="course-meta">
+            <div class="course-rating">
+              <i class="fa-solid fa-star"></i>4.6
+              <span>(740)</span>
+            </div>
+            <span>4,120 students</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../static/common.js"></script>
+<script src="../static/courses.js"></script>
+
+</body>
+
+</html>

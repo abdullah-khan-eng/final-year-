@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Assistant | AI Learning Assistant</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+          <link rel="stylesheet" href="../static/style.css">
+
+</head>
+
+<body>
+
+<!-- ================= Navigation ================= -->
+
+<nav id="nav">
+
+    <div class="nav-inner">
+
+        <a href="index.html" class="logo">
+
+            <div class="logo-mark">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+
+            <span>AI Learning Assistant</span>
+
+        </a>
+
+        <ul class="nav-links">
+
+    <li><a href="index.html">Home</a></li>
+
+    <li><a href="features.html">Features</a></li>
+
+    <li><a href="courses.html">Courses</a></li>
+
+    <li><a href="chatbot.html">AI Assistant</a></li>
+
+    <li><a href="quiz.html">Quiz</a></li>
+
+    <li><a href="dashboard.html">Dashboard</a></li>
+
+    <li><a href="tech.html">Tech Stack</a></li>
+
+</ul>
+    </div>
+
+</nav>
+
+
+<!-- ================= AI CHATBOT ================= -->
+<section id="assistant">
+  <div class="container">
+    <div class="chatbot-wrap">
+      <div class="chatbot-info reveal">
+        <span class="sec-tag"><i class="fa-solid fa-robot"></i>AI Assistant</span>
+        <h2>Your Personal <span class="grad">AI Tutor</span></h2>
+        <p>Stuck on a concept? Need a code walkthrough? Our AI assistant is trained on every course in the library and available 24/7. Ask follow-up questions, request examples, and get explanations tailored to your skill level.</p>
+        <ul class="chat-features">
+          <li>
+            <div class="ic"><i class="fa-solid fa-bolt"></i></div>
+            <div class="txt">
+              <strong>Instant Detailed Answers</strong>
+              <span>Get comprehensive explanations in under 2 seconds</span>
+            </div>
+          </li>
+          <li>
+            <div class="ic"><i class="fa-solid fa-code"></i></div>
+            <div class="txt">
+              <strong>Code-Aware Intelligence</strong>
+              <span>Understands syntax, debugging, and best practices</span>
+            </div>
+          </li>
+          <li>
+            <div class="ic"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="txt">
+              <strong>Context-Aware Responses</strong>
+              <span>Knows your course syllabus and learning progress</span>
+            </div>
+          </li>
+        </ul>
+        <button class="btn btn-primary" onclick="document.querySelector('.chat-input input').focus()">
+          <span>Ask a Question</span><i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <div class="chat-window reveal">
+        <div class="chat-header">
+          <div class="chat-bot-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <strong>AI Assistant</strong>
+            <span>Online · GPT-4 Powered</span>
+          </div>
+          <div class="chat-status">
+            <span><i class="fa-solid fa-circle-info"></i>Course: Python</span>
+          </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+          <div class="msg bot">
+            <div class="msg-av"><i class="fa-solid fa-robot"></i></div>
+            <div class="msg-bubble">
+              Hi! I'm your AI learning assistant. I can help you understand concepts, debug code, or prepare for quizzes. What would you like to learn today?
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-av"><i class="fa-solid fa-user"></i></div>
+            <div class="msg-bubble">Can you explain how list comprehensions work in Python?</div>
+          </div>
+          <div class="msg bot">
+            <div class="msg-av"><i class="fa-solid fa-robot"></i></div>
+            <div class="msg-bubble">
+              Absolutely! List comprehensions are a concise way to create lists in Python. The syntax is: <code>[expression for item in iterable if condition]</code><br><br>
+              For example: <code>[x**2 for x in range(10) if x % 2 == 0]</code> produces <code>[0, 4, 16, 36, 64]</code> — squares of even numbers from 0 to 9.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-av"><i class="fa-solid fa-user"></i></div>
+            <div class="msg-bubble">Can I use it with dictionaries too?</div>
+          </div>
+          <div class="msg bot">
+            <div class="msg-av"><i class="fa-solid fa-robot"></i></div>
+            <div class="msg-bubble">
+              Yes! Dictionary comprehensions work similarly: <code>{k: v for k, v in iterable}</code>. For example, <code>{x: x**2 for x in range(5)}</code> creates <code>{0:0, 1:1, 2:4, 3:9, 4:16}</code>. Want me to generate a practice quiz on this topic?
+            </div>
+          </div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Ask anything about your course..." />
+          <button class="chat-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../static/common.js"></script>
+<script src="../static/chatbot.js"></script>
+
+</body>
+
+</html>

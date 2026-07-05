@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | AI Learning Assistant</title>
+
+   <link rel="stylesheet" href="../static/style.css">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+</head>
+
+<body>
+
+<section id="dashboard" class="dashboard-section">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag"><i class="fa-solid fa-chart-line"></i>Student Dashboard</span>
+      <h2 class="sec-title">Track Progress in <span class="grad">Real-Time 3D</span></h2>
+      <p class="sec-desc">A beautiful analytics dashboard with 3D visualizations. Monitor your learning streaks, quiz performance, and skill growth.</p>
+    </div>
+
+    <div class="dash-wrap reveal">
+      <div class="dash-grid">
+        <!-- Sidebar -->
+        <aside class="dash-side">
+          <div class="dash-user">
+            <div class="dash-user-av">{{ user[1][:2].upper() }}</div>
+            <div class="dash-user-info">
+              <strong>{{ user[1] }}</strong>
+              <span>{{ user[4] }}</span>
+            </div>
+          </div>
+          <ul class="dash-nav">
+            <li class="active"><i class="fa-solid fa-grid-2"></i>Overview</li>
+           
+    <li>
+    <a href="{{ url_for('dashboard', tab='courses') }}">
+        <i class="fa-solid fa-book"></i>
+        My Courses
+    </a>
+</li>
+            <li>
+    <a href="{{ url_for('quiz') }}">
+        <i class="fa-solid fa-list-check"></i>
+        Quizzes
+    </a>
+</li>
+            <li><i class="fa-solid fa-trophy"></i>Achievements</li>
+            <li><i class="fa-solid fa-chart-line"></i>Analytics</li>
+            <li><i class="fa-solid fa-cloud-arrow-up"></i>Uploads</li>
+            <li><i class="fa-solid fa-gear"></i>Settings</li>
+          </ul>
+          <div class="dash-upgrade">
+            <h4>Unlock Pro Features</h4>
+            <p>Unlimited AI questions, advanced analytics, and certificates.</p>
+            <button onclick="showToast('Pro Plan','Upgrade page is available in the full version.')">Upgrade Now</button>
+          </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="dash-main">
+          {% if tab == "overview" %}
+          <div class="dash-head">
+            <div>
+              <h3>Welcome back, {{ user[1] }}</h3>
+              
+              <p>Course: {{ user[5] }}</p>
+            </div>
+            <div class="dash-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span>Search courses...</span>
+            </div>
+          </div>
+
+          <div class="dash-cards">
+            <div class="dash-card c1">
+              <div class="ic"><i class="fa-solid fa-clock"></i></div>
+              <div class="val">{{ total_courses }}</div>
+              <div class="lbl">Total Courses</div>
+              <div class="trend up"><i class="fa-solid fa-arrow-up"></i> 23%</div>
+            </div>
+            <div class="dash-card c2">
+              <div class="ic"><i class="fa-solid fa-list-check"></i></div>
+              <div class="val">{{ total_lectures }}</div>
+              <div class="lbl">Total Lectures</div>
+              <div class="trend up"><i class="fa-solid fa-arrow-up"></i> 5%</div>
+            </div>
+            <div class="dash-card c3">
+              <div class="ic"><i class="fa-solid fa-fire"></i></div>
+              <div class="val">{{ progress }}%</div>
+              <div class="lbl">Learning Progress</div>
+              <div class="trend up"><i class="fa-solid fa-arrow-up"></i> Best</div>
+            </div>
+            <div class="dash-card c4">
+              <div class="ic"><i class="fa-solid fa-medal"></i></div>
+              <div class="val">{{ certificates }}</div>
+              <div class="lbl">Certificates</div>
+              <div class="trend up"><i class="fa-solid fa-arrow-up"></i> 2 new</div>
+            </div>
+          </div>
+  <div class="dash-card c5">
+    <div class="ic">
+        <i class="fa-solid fa-list-check"></i>
+    </div>
+
+    {% if quiz_result %}
+        <div class="val">{{ quiz_result[0] }}/5</div>
+        <div class="lbl">Latest Quiz ({{ quiz_result[1] }}%)</div>
+    {% else %}
+        <div class="val">0</div>
+        <div class="lbl">No Quiz Attempted</div>
+    {% endif %}
+</div>
+</div>
+          <div class="dash-charts">
+            <div class="dash-chart-box">
+              <div class="chart-head">
+                <h4>Weekly Learning Activity</h4>
+                <div class="opts">
+                  <button class="active">Week</button>
+                  <button>Month</button>
+                  <button>Year</button>
+                </div>
+              </div>
+              <div class="chart-bars">
+                <div class="chart-bar" data-val="2.1h" style="height:35%"></div>
+                <div class="chart-bar" data-val="3.4h" style="height:55%"></div>
+                <div class="chart-bar" data-val="1.8h" style="height:30%"></div>
+                <div class="chart-bar" data-val="4.2h" style="height:70%"></div>
+                <div class="chart-bar" data-val="3.8h" style="height:62%"></div>
+                <div class="chart-bar" data-val="5.1h" style="height:85%"></div>
+                <div class="chart-bar" data-val="2.9h" style="height:48%"></div>
+              </div>
+              <div class="chart-labels">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+            </div>
+
+            <div class="dash-chart-box">
+              <div class="chart-head">
+                <h4>Skills Distribution</h4>
+              </div>
+              <div class="donut-wrap">
+                <div class="donut">
+                  <div class="donut-center">
+                    <div class="num">86%</div>
+                    <div class="lbl">Overall</div>
+                  </div>
+                </div>
+              </div>
+              <div class="donut-legend">
+                <div><span class="dot" style="background:var(--violet)"></span>Python — 45%</div>
+                <div><span class="dot" style="background:var(--cyan)"></span>Data Science — 25%</div>
+                <div><span class="dot" style="background:var(--pink)"></span>Design — 18%</div>
+                <div><span class="dot" style="background:var(--emerald)"></span>Business — 12%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-list">
+            <div class="dash-list-box">
+              <h4>Continue Learning</h4>
+<div class="course-row">
+    <div class="course-row-ic" style="background:var(--grad-1)">
+        <i class="fa-brands fa-python"></i>
+    </div>
+
+   <div class="dash-card c5">
+    <div class="ic">
+        <i class="fa-solid fa-list-check"></i>
+    </div>
+
+    {% if quiz_result %}
+        <div class="val">{{ quiz_result[0] }}/5</div>
+        <div class="lbl">Latest Quiz ({{ quiz_result[1] }}%)</div>
+    {% else %}
+        <div class="val">0</div>
+        <div class="lbl">No Quiz Attempted</div>
+    {% endif %}
+</div>
+
+</div>
+
+<div class="dash-charts">
+              <div class="course-row">
+                <div class="course-row-ic" style="background:var(--grad-2)"><i class="fa-solid fa-brain"></i></div>
+                <div class="course-row-info">
+                  <strong>{{ my_course[3] }}</strong>
+                  <div class="bar"><span style="width:45%"></span></div>
+                </div>
+                <div class="course-row-pct">45%</div>
+              </div>
+              <div class="course-row">
+                <div class="course-row-ic" style="background:var(--grad-3)"><i class="fa-solid fa-chart-data"></i></div>
+                <div class="course-row-info">
+                  <strong>Data Analysis & Visualization</strong>
+                  <div class="bar"><span style="width:88%"></span></div>
+                </div>
+                <div class="course-row-pct">88%</div>
+              </div>
+            </div>
+           
+
+            <div class="dash-list-box">
+              <h4>Recent Activity</h4>
+
+              <div class="activity-item">
+                <div class="activity-ic" style="background:rgba(52,211,153,0.15);color:var(--emerald)"><i class="fa-solid fa-check"></i></div>
+                <div class="activity-txt">
+                  <strong>Completed Quiz: Python Loops</strong>
+                  <span>Score: 9/10 · 2 min ago</span>
+                </div>
+              </div>
+               
+              <div class="activity-item">
+                <div class="activity-ic" style="background:rgba(139,92,246,0.15);color:var(--violet-bright)"><i class="fa-solid fa-play"></i></div>
+                <div class="activity-txt">
+                  <strong>Watched: Decorators in Python</strong>
+                  <span>14 min · 1 hour ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-ic" style="background:rgba(34,211,238,0.15);color:var(--cyan)"><i class="fa-solid fa-robot"></i></div>
+                <div class="activity-txt">
+                  <strong>AI Chat: Generators vs Lists</strong>
+                  <span>5 messages · 3 hours ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-ic" style="background:rgba(244,114,182,0.15);color:var(--pink)"><i class="fa-solid fa-trophy"></i></div>
+                <div class="activity-txt">
+                  <strong>Earned: Python Basics Certificate</strong>
+                  <span>Yesterday</span>
+                </div>
+              </div>
+              {% endif %}
+{% if tab == "courses" %}
+
+<div class="dash-head">
+    <div>
+        <h3>My Course</h3>
+        <p>Your enrolled course details</p>
+    </div>
+</div>
+
+<div class="dash-list-box">
+
+    <h2>{{ my_course[1] }}</h2>
+
+    <p>
+        <strong>Course Code:</strong>
+        {{ my_course[2] }}
+    </p>
+
+    <p>
+        <strong>Description:</strong>
+        {{ my_course[3] }}
+    </p>
+
+    <br>
+
+    <a href="{{ url_for('lectures') }}" class="btn-primary">
+        ▶ Start Learning
+    </a>
+
+</div>
+
+{% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+ </div>
+</div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../static/common.js"></script>
+<script src="../static/dashboard.js"></script>
+</body>
+</html>

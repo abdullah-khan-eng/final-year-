@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>My Lectures</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>My Course Lectures</h1>
+        <hr>
+
+        {% for lecture in lectures %}
+
+        <div class="dash-list-box">
+
+            <h3>{{ lecture[2] }}</h3>
+
+            <p>{{ lecture[4] }}</p>
+<p>{{ lecture[3] }}</p>
+
+<a href="{{ url_for('lecture_player', lecture_id=lecture[0]) }}" class="btn-primary">
+    ▶ Watch Lecture
+</a>
+            <br><br>
+
+<a href="{{ url_for('complete_lecture', lecture_id=lecture[0]) }}"
+   class="btn-primary">
+    ✅ Mark Complete
+</a>
+
+        </div>
+
+        <br>
+
+        {% endfor %}
+
+    </div>
+
+</body>
+
+</html>

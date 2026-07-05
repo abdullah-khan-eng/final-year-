@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lecture Player</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>{{ lecture[2] }}</h1>
+
+    <p>{{ lecture[3] }}</p>
+
+    <hr>
+
+   <iframe
+    width="100%"
+    height="500"
+    src="{{ lecture[4].replace('watch?v=', 'embed/') }}"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen>
+</iframe>
+    <br><br>
+
+    <a href="{{ url_for('lectures') }}" class="btn-primary">
+        ← Back to Lectures
+    </a>
+
+</div>
+
+</body>
+</html>

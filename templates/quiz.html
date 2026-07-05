@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ quiz_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>{{ quiz_title }}</h1>
+
+    <form action="/submit_quiz" method="POST">
+
+        {% for q in questions %}
+
+        <div class="dash-list-box">
+
+            <h3>Q{{ loop.index }}. {{ q[2] }}</h3>
+
+            <label>
+                <input type="radio" name="question{{ q[0] }}" value="A">
+                {{ q[3] }}
+            </label>
+
+            <br><br>
+
+            <label>
+                <input type="radio" name="question{{ q[0] }}" value="B">
+                {{ q[4] }}
+            </label>
+
+            <br><br>
+
+            <label>
+                <input type="radio" name="question{{ q[0] }}" value="C">
+                {{ q[5] }}
+            </label>
+
+            <br><br>
+
+            <label>
+                <input type="radio" name="question{{ q[0] }}" value="D">
+                {{ q[6] }}
+            </label>
+
+        </div>
+
+        <br>
+
+        {% endfor %}
+
+        <button type="submit" class="btn-primary">
+            Submit Quiz
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>
