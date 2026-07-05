@@ -5,147 +5,126 @@
 const chatBody = document.getElementById("chatBody");
 const chatInput = document.getElementById("chatInput");
 
-// AI Demo Responses
-const aiResponses = [
-
-"Great question! Let me explain it step by step so it's easy to understand.",
-
-"This concept is very important. Think of it as a process where each step builds on the previous one.",
-
-"Excellent! Here's an example that will make it easier to understand.",
-
-"Sure! Let me explain this with a practical example and simple language.",
-
-"This topic is commonly asked in interviews and exams. Here's how it works."
-
-];
-
 // ===============================
 // ADD MESSAGE
 // ===============================
 
-function appendMessage(text,sender){
+function appendMessage(text, sender) {
 
-const msg=document.createElement("div");
+    const msg = document.createElement("div");
 
-msg.className=`msg ${sender}`;
+    msg.className = `msg ${sender}`;
 
-msg.innerHTML=`
+    msg.innerHTML = `
+        <div class="msg-av">
+            <i class="fa-solid fa-${sender === "bot" ? "robot" : "user"}"></i>
+        </div>
+        <div class="msg-bubble">
+            ${text}
+        </div>
+    `;
 
-<div class="msg-av">
-<i class="fa-solid fa-${sender==="bot"?"robot":"user"}"></i>
-</div>
+    chatBody.appendChild(msg);
 
-<div class="msg-bubble">
-${text}
-</div>
-
-`;
-
-chatBody.appendChild(msg);
-
-chatBody.scrollTop=chatBody.scrollHeight;
-
+    chatBody.scrollTop = chatBody.scrollHeight;
 }
 
 // ===============================
 // TYPING EFFECT
 // ===============================
 
-function showTyping(){
+function showTyping() {
 
-const typing=document.createElement("div");
+    const typing = document.createElement("div");
 
-typing.className="msg bot";
+    typing.className = "msg bot";
 
-typing.id="typingMsg";
+    typing.id = "typingMsg";
 
-typing.innerHTML=`
+    typing.innerHTML = `
+        <div class="msg-av">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="msg-bubble">
+            Typing...
+        </div>
+    `;
 
-<div class="msg-av">
+    chatBody.appendChild(typing);
 
-<i class="fa-solid fa-robot"></i>
-
-</div>
-
-<div class="msg-bubble">
-
-Typing...
-
-</div>
-
-`;
-
-chatBody.appendChild(typing);
-
-chatBody.scrollTop=chatBody.scrollHeight;
-
+    chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-function hideTyping(){
+function hideTyping() {
 
-const typing=document.getElementById("typingMsg");
+    const typing = document.getElementById("typingMsg");
 
-if(typing){
-
-typing.remove();
-
-}
-
+    if (typing) {
+        typing.remove();
+    }
 }
 
 // ===============================
 // SEND MESSAGE
 // ===============================
 
-function sendChat(){
+async function sendChat() {
 
-const text=chatInput.value.trim();
+    const text = chatInput.value.trim();
 
-if(text==="") return;
+    if (text === "") return;
 
-appendMessage(text,"user");
+    appendMessage(text, "user");
 
-chatInput.value="";
+    chatInput.value = "";
 
-showTyping();
+    showTyping();
 
-setTimeout(()=>{
+    try {
 
-hideTyping();
+        const res = await fetch("/chatbot/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: text })
+        });
 
-const randomReply=
+        const data = await res.json();
 
-aiResponses[Math.floor(Math.random()*aiResponses.length)];
+        hideTyping();
 
-appendMessage(randomReply,"bot");
+        if (!res.ok) {
+            appendMessage(`Sorry, something went wrong: ${data.error || "unknown error"}`, "bot");
+            return;
+        }
 
-},1200);
+        appendMessage(data.answer, "bot");
 
+    } catch (err) {
+
+        hideTyping();
+
+        appendMessage("Sorry, I couldn't reach the AI service. Please try again.", "bot");
+    }
 }
 
 // Button Click
 
-window.sendChat=sendChat;
+window.sendChat = sendChat;
 
 // Press Enter
 
-chatInput.addEventListener("keypress",(e)=>{
+chatInput.addEventListener("keypress", (e) => {
 
-if(e.key==="Enter"){
-
-sendChat();
-
-}
-
+    if (e.key === "Enter") {
+        sendChat();
+    }
 });
 
 // ===============================
 // AUTO FOCUS
 // ===============================
 
-window.addEventListener("load",()=>{
+window.addEventListener("load", () => {
 
-chatInput.focus();
-
+    chatInput.focus();
 });

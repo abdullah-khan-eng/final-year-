@@ -9,11 +9,10 @@
     <title>AI Assistant | AI Learning Assistant</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+          href="{{ url_for('static', filename='style.css') }}">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-          <link rel="stylesheet" href="../static/style.css">
 
 </head>
 
@@ -25,7 +24,7 @@
 
     <div class="nav-inner">
 
-        <a href="index.html" class="logo">
+        <a href="{{ url_for('home') }}" class="logo">
 
             <div class="logo-mark">
                 <i class="fa-solid fa-brain"></i>
@@ -37,19 +36,13 @@
 
         <ul class="nav-links">
 
-    <li><a href="index.html">Home</a></li>
+    <li><a href="{{ url_for('home') }}">Home</a></li>
 
-    <li><a href="features.html">Features</a></li>
+    <li><a href="{{ url_for('chatbot') }}">AI Assistant</a></li>
 
-    <li><a href="courses.html">Courses</a></li>
+    <li><a href="{{ url_for('quiz') }}">Quiz</a></li>
 
-    <li><a href="chatbot.html">AI Assistant</a></li>
-
-    <li><a href="quiz.html">Quiz</a></li>
-
-    <li><a href="dashboard.html">Dashboard</a></li>
-
-    <li><a href="tech.html">Tech Stack</a></li>
+    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
 
 </ul>
     </div>
@@ -101,7 +94,7 @@
             <span>Online · GPT-4 Powered</span>
           </div>
           <div class="chat-status">
-            <span><i class="fa-solid fa-circle-info"></i>Course: Python</span>
+            <span><i class="fa-solid fa-circle-info"></i>Course: {{ session['course'] }}</span>
           </div>
         </div>
         <div class="chat-body" id="chatBody">
@@ -109,27 +102,6 @@
             <div class="msg-av"><i class="fa-solid fa-robot"></i></div>
             <div class="msg-bubble">
               Hi! I'm your AI learning assistant. I can help you understand concepts, debug code, or prepare for quizzes. What would you like to learn today?
-            </div>
-          </div>
-          <div class="msg user">
-            <div class="msg-av"><i class="fa-solid fa-user"></i></div>
-            <div class="msg-bubble">Can you explain how list comprehensions work in Python?</div>
-          </div>
-          <div class="msg bot">
-            <div class="msg-av"><i class="fa-solid fa-robot"></i></div>
-            <div class="msg-bubble">
-              Absolutely! List comprehensions are a concise way to create lists in Python. The syntax is: <code>[expression for item in iterable if condition]</code><br><br>
-              For example: <code>[x**2 for x in range(10) if x % 2 == 0]</code> produces <code>[0, 4, 16, 36, 64]</code> — squares of even numbers from 0 to 9.
-            </div>
-          </div>
-          <div class="msg user">
-            <div class="msg-av"><i class="fa-solid fa-user"></i></div>
-            <div class="msg-bubble">Can I use it with dictionaries too?</div>
-          </div>
-          <div class="msg bot">
-            <div class="msg-av"><i class="fa-solid fa-robot"></i></div>
-            <div class="msg-bubble">
-              Yes! Dictionary comprehensions work similarly: <code>{k: v for k, v in iterable}</code>. For example, <code>{x: x**2 for x in range(5)}</code> creates <code>{0:0, 1:1, 2:4, 3:9, 4:16}</code>. Want me to generate a practice quiz on this topic?
             </div>
           </div>
         </div>
@@ -145,8 +117,8 @@
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="../static/common.js"></script>
-<script src="../static/chatbot.js"></script>
+<script src="{{ url_for('static', filename='common.js') }}"></script>
+<script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 
 </body>
 

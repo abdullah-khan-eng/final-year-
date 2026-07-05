@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
 from config import Config
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
+from google import genai
+from google.genai import types
 import os
 def generate_certificate(student_name, course_name, percentage, filename):
 
@@ -55,6 +56,7 @@ app.config.from_object(Config)
 
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
+gemini_client = genai.Client(api_key=Config.GEMINI_API_KEY)
 
 
 @app.route("/")
@@ -158,11 +160,110 @@ def login():
             session["role"] = user[4]
             session["course"] = user[5]
 
+            if user[4] == "teacher":
+                return redirect(url_for("teacher_dashboard"))
+
             return redirect(url_for("dashboard"))
 
         flash("Invalid Email or Password", "danger")
 
     return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
+@app.route("/teacher_dashboard")
+def teacher_dashboard():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("role") != "teacher":
+        return redirect(url_for("dashboard"))
+
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT id FROM courses WHERE course_name=%s", (session["course"],))
+    course = cursor.fetchone()
+
+    lecture_stats = []
+    total_students = 0
+
+    if course:
+        course_id = course[0]
+
+        cursor.execute(
+            "SELECT id, title, description, video_url FROM lectures WHERE course_id=%s",
+            (course_id,)
+        )
+        lectures = cursor.fetchall()
+
+        for lecture in lectures:
+            cursor.execute(
+                "SELECT COUNT(*) FROM lecture_progress WHERE lecture_id=%s",
+                (lecture[0],)
+            )
+            student_count = cursor.fetchone()[0]
+
+            lecture_stats.append({
+                "title": lecture[1],
+                "description": lecture[2],
+                "video_url": lecture[3],
+                "student_count": student_count
+            })
+
+        cursor.execute(
+            "SELECT COUNT(*) FROM users WHERE role='student' AND course=%s",
+            (session["course"],)
+        )
+        total_students = cursor.fetchone()[0]
+
+    cursor.close()
+
+    return render_template(
+        "teacher_dashboard.html",
+        lecture_stats=lecture_stats,
+        total_students=total_students,
+        total_lectures=len(lecture_stats)
+    )
+
+
+@app.route("/teacher/upload_lecture", methods=["POST"])
+def upload_lecture():
+
+    if "user_id" not in session or session.get("role") != "teacher":
+        return redirect(url_for("login"))
+
+    title = request.form["title"]
+    description = request.form["description"]
+    video_url = request.form["video_url"]
+
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT id FROM courses WHERE course_name=%s", (session["course"],))
+    course = cursor.fetchone()
+
+    if not course:
+        cursor.close()
+        return "Your course was not found. Please contact admin."
+
+    cursor.execute(
+        """
+        INSERT INTO lectures (course_id, title, description, video_url)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (course[0], title, description, video_url)
+    )
+
+    mysql.connection.commit()
+    cursor.close()
+
+    flash("Lecture uploaded successfully!", "success")
+    return redirect(url_for("teacher_dashboard"))
 
 
 @app.route("/dashboard")
@@ -171,6 +272,9 @@ def dashboard():
 
     if "user_id" not in session:
         return redirect(url_for("login"))
+
+    if session.get("role") == "teacher":
+        return redirect(url_for("teacher_dashboard"))
 
     cursor = mysql.connection.cursor()
 
@@ -230,6 +334,45 @@ def dashboard():
     if total_lectures > 0:
         progress = int((completed_lectures / total_lectures) * 100)
 
+    # Per-Lecture Progress (for "progress" tab)
+    course_lectures = []
+
+    if my_course:
+        cursor.execute(
+            "SELECT id, title FROM lectures WHERE course_id=%s",
+            (my_course[0],)
+        )
+        lectures_in_course = cursor.fetchall()
+
+        for lecture in lectures_in_course:
+            cursor.execute(
+                """
+                SELECT completed, watched_percentage
+                FROM lecture_progress
+                WHERE student_id=%s AND lecture_id=%s
+                """,
+                (session["user_id"], lecture[0])
+            )
+            lecture_progress_row = cursor.fetchone()
+
+            course_lectures.append({
+                "title": lecture[1],
+                "completed": lecture_progress_row[0] if lecture_progress_row else 0,
+                "watched_percentage": lecture_progress_row[1] if lecture_progress_row else 0
+            })
+
+    # Certificates List (for "certificates" tab)
+    cursor.execute(
+        """
+        SELECT co.course_name, c.certificate_file
+        FROM certificates c
+        JOIN courses co ON c.course_id = co.id
+        WHERE c.student_id=%s
+        """,
+        (session["user_id"],)
+    )
+    certificate_list = cursor.fetchall()
+
     cursor.close()
 
     return render_template(
@@ -241,8 +384,54 @@ def dashboard():
         certificates=certificates,
         my_course=my_course,
         quiz_result=quiz_result,
+        course_lectures=course_lectures,
+        certificate_list=certificate_list,
         tab=tab
     )
+
+
+@app.route("/chatbot")
+def chatbot():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    return render_template("chatbot.html")
+
+
+@app.route("/chatbot/ask", methods=["POST"])
+def chatbot_ask():
+
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    question = request.get_json(silent=True) or {}
+    question = question.get("question", "").strip()
+
+    if not question:
+        return jsonify({"error": "Question is required"}), 400
+
+    course = session.get("course", "your course")
+
+    try:
+        response = gemini_client.models.generate_content(
+            model=Config.GEMINI_MODEL,
+            contents=question,
+            config=types.GenerateContentConfig(
+                system_instruction=(
+                    f"You are an AI tutor helping a student enrolled in the course "
+                    f"'{course}'. Answer the student's question in detail, tailored "
+                    f"to this course, in clear and simple language."
+                )
+            )
+        )
+        answer = response.text
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify({"answer": answer})
+
+
 @app.route("/lectures")
 def lectures():
 

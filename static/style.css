@@ -88,7 +88,7 @@
     max-width:1320px;margin:0 auto;padding:0 32px;
     display:flex;align-items:center;justify-content:space-between;gap:40px;
   }
-  .logo{display:flex;align-items:center;gap:12px;font-family:'Sora';font-weight:800;font-size:20px}
+  .logo{display:flex;align-items:center;gap:12px;font-family:'Sora';font-weight:800;font-size:20px;flex-shrink:0;white-space:nowrap}
   .logo-mark{
     width:42px;height:42px;border-radius:12px;
     background:var(--grad-1);
@@ -108,7 +108,7 @@
     color:var(--text-dim);transition:all .3s ease;position:relative;
   }
   .nav-links a:hover{color:var(--text);background:rgba(139,92,246,0.1)}
-  .nav-cta{display:flex;align-items:center;gap:12px}
+  .nav-cta{display:flex;align-items:center;gap:12px;flex-shrink:0}
   .btn{
     display:inline-flex;align-items:center;gap:8px;
     padding:12px 22px;border-radius:12px;font-weight:600;font-size:14px;
@@ -844,6 +844,9 @@
   .toast span{font-size:.75rem;color:var(--text-dim)}
 
   /* ============ RESPONSIVE ============ */
+  @media(max-width:1500px){
+    .nav-links{display:none}
+  }
   @media(max-width:1024px){
     .features-grid,.courses-grid{grid-template-columns:repeat(2,1fr)}
     .chatbot-wrap,.quiz-wrap{grid-template-columns:1fr;gap:40px}
@@ -853,7 +856,6 @@
     .hero-stats{grid-template-columns:repeat(2,1fr)}
   }
   @media(max-width:768px){
-    .nav-links{display:none}
     .menu-toggle{display:block}
     .container{padding:0 20px}
     section{padding:80px 0}
