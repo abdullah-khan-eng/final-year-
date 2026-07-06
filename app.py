@@ -61,7 +61,29 @@ gemini_client = genai.Client(api_key=Config.GEMINI_API_KEY)
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM courses")
+    total_courses = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM users WHERE role='student'")
+    total_students = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM users WHERE role='teacher'")
+    total_teachers = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM lectures")
+    total_lectures = cursor.fetchone()[0]
+
+    cursor.close()
+
+    return render_template(
+        "index.html",
+        total_courses=total_courses,
+        total_students=total_students,
+        total_teachers=total_teachers,
+        total_lectures=total_lectures
+    )
 
 
 @app.route("/test_db")
@@ -641,6 +663,8 @@ def submit_quiz():
     ))
 
     # Generate Certificate if Passed
+    certificate_file = None
+
     if percentage >= 70:
 
         # Course ID
@@ -657,7 +681,7 @@ def submit_quiz():
 
             # Check Existing Certificate
             cursor.execute("""
-                SELECT *
+                SELECT certificate_file
                 FROM certificates
                 WHERE student_id=%s
                 AND course_id=%s
@@ -668,7 +692,9 @@ def submit_quiz():
 
             already = cursor.fetchone()
 
-            if not already:
+            if already:
+                certificate_file = already[0]
+            else:
 
                 # PDF Path
                 pdf_file = f"static/certificates/certificate_{session['user_id']}_{course_id}.pdf"
@@ -692,20 +718,23 @@ def submit_quiz():
                     pdf_file
                 ))
 
+                certificate_file = pdf_file
+
     mysql.connection.commit()
     cursor.close()
 
-    return f"""
-        <h2>🎉 Quiz Submitted Successfully</h2>
+    certificate_url = None
+    if certificate_file:
+        certificate_url = url_for("static", filename=certificate_file.split("static/")[1])
 
-        <h3>Marks: {marks}/{total_questions}</h3>
-
-        <h3>Percentage: {percentage}%</h3>
-
-        <br>
-
-        <a href="/dashboard">⬅ Back to Dashboard</a>
-    """
+    return render_template(
+        "quiz_result.html",
+        marks=marks,
+        total_questions=total_questions,
+        percentage=percentage,
+        passed=percentage >= 70,
+        certificate_url=certificate_url
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

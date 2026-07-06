@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Result | AI Learning Assistant</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        .result-page{
+            min-height:100vh;display:flex;align-items:center;justify-content:center;
+            padding:40px 20px;
+        }
+        .result-card{
+            max-width:480px;width:100%;text-align:center;
+            background:var(--surface-2, rgba(255,255,255,0.03));
+            border:1px solid var(--border-strong);border-radius:20px;
+            padding:48px 36px;
+        }
+        .result-icon{
+            width:72px;height:72px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            margin:0 auto 24px;font-size:32px;
+        }
+        .result-icon.pass{background:rgba(52,211,153,0.15);color:var(--emerald)}
+        .result-icon.fail{background:rgba(244,114,182,0.15);color:var(--pink)}
+        .result-card h2{font-family:'Sora';font-size:24px;margin-bottom:8px}
+        .result-stats{
+            display:flex;justify-content:center;gap:32px;
+            margin:28px 0;padding:24px 0;
+            border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+        }
+        .result-stat .val{font-family:'Sora';font-size:28px;font-weight:800;color:var(--text)}
+        .result-stat .lbl{font-size:13px;color:var(--text-dim);margin-top:4px}
+        .result-cert{
+            margin-bottom:24px;padding:16px;border-radius:12px;
+            background:rgba(139,92,246,0.08);border:1px solid var(--border-strong);
+        }
+        .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    </style>
+</head>
+
+<body>
+
+<div class="result-page">
+  <div class="result-card">
+
+    <div class="result-icon {{ 'pass' if passed else 'fail' }}">
+        <i class="fa-solid {{ 'fa-check' if passed else 'fa-rotate-left' }}"></i>
+    </div>
+
+    <h2>{{ 'Quiz Passed!' if passed else 'Quiz Submitted' }}</h2>
+    <p style="color:var(--text-dim)">
+        {{ 'Great job — you cleared the passing mark.' if passed else "Keep practicing — you'll get there next time." }}
+    </p>
+
+    <div class="result-stats">
+        <div class="result-stat">
+            <div class="val">{{ marks }}/{{ total_questions }}</div>
+            <div class="lbl">Marks</div>
+        </div>
+        <div class="result-stat">
+            <div class="val">{{ percentage }}%</div>
+            <div class="lbl">Score</div>
+        </div>
+    </div>
+
+    {% if certificate_url %}
+    <div class="result-cert">
+        <p style="margin-bottom:12px"><i class="fa-solid fa-award"></i> You've earned a certificate for this course!</p>
+        <a href="{{ certificate_url }}" class="btn-primary" download>⬇ Download Certificate</a>
+    </div>
+    {% endif %}
+
+    <div class="result-actions">
+        <a href="{{ url_for('dashboard') }}" class="btn-primary">⬅ Back to Dashboard</a>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -77,11 +77,11 @@
             </p>
 
             <div class="hero-actions">
-                <a href="courses.html" class="btn btn-primary">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">
                     Explore Courses
                 </a>
 
-                <a href="chatbot.html" class="btn btn-outline">
+                <a href="{{ url_for('login') }}" class="btn btn-outline">
                     AI Assistant
                 </a>
             </div>
@@ -89,23 +89,23 @@
             <div class="hero-stats">
 
                 <div class="stat-item">
-                    <div class="num" data-count="450">0</div>
+                    <div class="num" data-count="{{ total_courses }}">0</div>
                     <div class="lbl">Courses</div>
                 </div>
 
                 <div class="stat-item">
-                    <div class="num" data-count="28">0</div>
-                    <div class="lbl">K Students</div>
+                    <div class="num" data-count="{{ total_students }}">0</div>
+                    <div class="lbl">Students</div>
                 </div>
 
                 <div class="stat-item">
-                    <div class="num" data-count="120">0</div>
+                    <div class="num" data-count="{{ total_teachers }}">0</div>
                     <div class="lbl">Teachers</div>
                 </div>
 
                 <div class="stat-item">
-                    <div class="num" data-count="98">0</div>
-                    <div class="lbl">Accuracy %</div>
+                    <div class="num" data-count="{{ total_lectures }}">0</div>
+                    <div class="lbl">Lectures</div>
                 </div>
 
             </div>
