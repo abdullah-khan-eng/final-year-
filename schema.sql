@@ -117,6 +117,30 @@ INSERT INTO lectures (course_id, title, description, video_url)
 SELECT id, CONCAT('Core Concepts in ', course_name), CONCAT('A deeper look at the core concepts of ', course_name, '.'), 'https://www.youtube.com/watch?v=cQT33yu9pY8'
 FROM courses;
 
+INSERT INTO lectures (course_id, title, description, video_url)
+SELECT id, CONCAT('Practical Applications of ', course_name), CONCAT('Hands-on examples applying ', course_name, ' concepts to real problems.'), 'https://www.youtube.com/watch?v=rfscVS0vtbw'
+FROM courses;
+
+INSERT INTO lectures (course_id, title, description, video_url)
+SELECT id, CONCAT('Tools and Technologies for ', course_name), CONCAT('An overview of the most widely used tools in ', course_name, '.'), 'https://www.youtube.com/watch?v=cQT33yu9pY8'
+FROM courses;
+
+INSERT INTO lectures (course_id, title, description, video_url)
+SELECT id, CONCAT('Best Practices in ', course_name), CONCAT('Industry best practices every ', course_name, ' learner should follow.'), 'https://www.youtube.com/watch?v=rfscVS0vtbw'
+FROM courses;
+
+INSERT INTO lectures (course_id, title, description, video_url)
+SELECT id, CONCAT('Common Challenges in ', course_name), CONCAT('Frequent mistakes and challenges when learning ', course_name, ', and how to avoid them.'), 'https://www.youtube.com/watch?v=cQT33yu9pY8'
+FROM courses;
+
+INSERT INTO lectures (course_id, title, description, video_url)
+SELECT id, CONCAT('Real-World Case Studies in ', course_name), CONCAT('Case studies showing how ', course_name, ' is applied in the industry.'), 'https://www.youtube.com/watch?v=rfscVS0vtbw'
+FROM courses;
+
+INSERT INTO lectures (course_id, title, description, video_url)
+SELECT id, CONCAT('Advanced Topics in ', course_name), CONCAT('A closer look at advanced, in-depth topics within ', course_name, '.'), 'https://www.youtube.com/watch?v=cQT33yu9pY8'
+FROM courses;
+
 INSERT INTO quiz (course_id, title)
 SELECT id, CONCAT(course_name, ' Quiz')
 FROM courses;

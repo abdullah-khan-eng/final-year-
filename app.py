@@ -715,7 +715,7 @@ def lectures():
 
     # Us course ki lectures
     cursor.execute(
-        "SELECT * FROM lectures WHERE course_id=%s",
+        "SELECT * FROM lectures WHERE course_id=%s ORDER BY id ASC",
         (course_id,)
     )
 
