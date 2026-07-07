@@ -2,57 +2,147 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
 from config import Config
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from datetime import datetime
 from google import genai
 from google.genai import types
 from google.genai import errors as genai_errors
 import os
 import time
 import json
-def generate_certificate(student_name, course_name, percentage, filename):
+def wrap_text(c, text, font, size, max_width):
+    c.setFont(font, size)
+    words = text.split(" ")
+    lines = []
+    current = ""
+
+    for word in words:
+        candidate = f"{current} {word}".strip()
+        if c.stringWidth(candidate, font, size) <= max_width:
+            current = candidate
+        else:
+            if current:
+                lines.append(current)
+            current = word
+
+    if current:
+        lines.append(current)
+
+    return lines
+
+
+def generate_certificate(student_name, course_name, percentage, filename, completed_lectures=None, total_lectures=0):
 
     os.makedirs("static/certificates", exist_ok=True)
 
-    pdf = SimpleDocTemplate(filename)
+    completed_lectures = completed_lectures or []
 
-    styles = getSampleStyleSheet()
+    VIOLET = colors.HexColor("#8b5cf6")
+    CYAN = colors.HexColor("#22d3ee")
+    DARK = colors.HexColor("#151022")
+    DIM = colors.HexColor("#6b7280")
 
-    story = []
+    page_width, page_height = landscape(A4)
+    c = canvas.Canvas(filename, pagesize=landscape(A4))
 
-    story.append(Paragraph("<b><font size=24>AI Learning Assistant</font></b>", styles["Title"]))
-    story.append(Paragraph("<br/><br/>", styles["Normal"]))
+    # Background
+    c.setFillColor(colors.HexColor("#fcfbff"))
+    c.rect(0, 0, page_width, page_height, fill=1, stroke=0)
 
-    story.append(Paragraph("<b><font size=20>Certificate of Completion</font></b>", styles["Heading1"]))
-    story.append(Paragraph("<br/><br/>", styles["Normal"]))
+    # Decorative borders
+    margin = 1 * cm
+    c.setStrokeColor(VIOLET)
+    c.setLineWidth(3)
+    c.rect(margin, margin, page_width - 2 * margin, page_height - 2 * margin, fill=0, stroke=1)
 
-    story.append(
-        Paragraph(
-            f"This is to certify that <b>{student_name}</b> has successfully completed the course <b>{course_name}</b>.",
-            styles["BodyText"]
+    inner_margin = margin + 0.3 * cm
+    c.setStrokeColor(CYAN)
+    c.setLineWidth(1)
+    c.rect(inner_margin, inner_margin, page_width - 2 * inner_margin, page_height - 2 * inner_margin, fill=0, stroke=1)
+
+    # Logo mark
+    logo_x = page_width / 2
+    logo_y = page_height - 2.6 * cm
+    c.setFillColor(VIOLET)
+    c.circle(logo_x, logo_y, 0.9 * cm, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(logo_x, logo_y - 0.28 * cm, "AI")
+
+    c.setFillColor(VIOLET)
+    c.setFont("Helvetica-Bold", 13)
+    c.drawCentredString(page_width / 2, logo_y - 1.5 * cm, "AI LEARNING ASSISTANT")
+
+    # Title
+    c.setFillColor(DARK)
+    c.setFont("Helvetica-Bold", 30)
+    c.drawCentredString(page_width / 2, page_height - 6.1 * cm, "Certificate of Completion")
+
+    c.setStrokeColor(CYAN)
+    c.setLineWidth(2)
+    c.line(page_width / 2 - 3 * cm, page_height - 6.5 * cm, page_width / 2 + 3 * cm, page_height - 6.5 * cm)
+
+    # Body
+    c.setFillColor(DIM)
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(page_width / 2, page_height - 7.6 * cm, "This certifies that")
+
+    c.setFillColor(DARK)
+    c.setFont("Helvetica-Bold", 24)
+    c.drawCentredString(page_width / 2, page_height - 8.7 * cm, student_name)
+
+    c.setFillColor(DIM)
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(page_width / 2, page_height - 9.7 * cm, "has successfully completed the course")
+
+    c.setFillColor(VIOLET)
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(page_width / 2, page_height - 10.6 * cm, course_name)
+
+    c.setFillColor(CYAN)
+    c.setFont("Helvetica-Bold", 13)
+    c.drawCentredString(page_width / 2, page_height - 11.6 * cm, f"Final Quiz Score: {percentage}%")
+
+    # Learning summary ("character") based on real progress data
+    y = page_height - 12.9 * cm
+
+    if total_lectures:
+        summary = (
+            f"{student_name} completed {len(completed_lectures)} of {total_lectures} course lectures, "
+            f"showing consistent engagement and dedication throughout the {course_name} course."
         )
-    )
+        c.setFillColor(DIM)
+        for line in wrap_text(c, summary, "Helvetica-Oblique", 10, page_width - 6 * cm):
+            c.drawCentredString(page_width / 2, y, line)
+            y -= 0.45 * cm
+        y -= 0.2 * cm
 
-    story.append(Paragraph("<br/>", styles["Normal"]))
+    # Topics / lectures covered
+    if completed_lectures:
+        c.setFillColor(DARK)
+        c.setFont("Helvetica-Bold", 11)
+        c.drawCentredString(page_width / 2, y, "Topics Covered")
+        y -= 0.55 * cm
 
-    story.append(
-        Paragraph(
-            f"<b>Final Score:</b> {percentage}%",
-            styles["BodyText"]
-        )
-    )
+        c.setFillColor(DIM)
+        topics_line = "   •   ".join(completed_lectures)
+        for line in wrap_text(c, topics_line, "Helvetica", 10, page_width - 5 * cm):
+            c.drawCentredString(page_width / 2, y, line)
+            y -= 0.45 * cm
 
-    story.append(Paragraph("<br/>", styles["Normal"]))
+    # Footer
+    c.setFont("Helvetica", 10)
+    c.setFillColor(DIM)
+    c.drawString(margin + 1.2 * cm, margin + 0.9 * cm, f"Date: {datetime.now().strftime('%B %d, %Y')}")
 
-    story.append(
-        Paragraph(
-            "Congratulations on successfully completing your course!",
-            styles["BodyText"]
-        )
-    )
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColor(VIOLET)
+    c.drawRightString(page_width - margin - 1.2 * cm, margin + 0.9 * cm, "AI Learning Assistant")
 
-    pdf.build(story)
-# os.makedirs("static/certificates", exist_ok=True)
+    c.save()
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -874,12 +964,32 @@ def submit_quiz():
                 # PDF Path
                 pdf_file = f"static/certificates/certificate_{session['user_id']}_{course_id}.pdf"
 
+                # Lectures completed in this course (for the certificate's topic list)
+                cursor.execute(
+                    """
+                    SELECT l.title
+                    FROM lectures l
+                    JOIN lecture_progress lp ON lp.lecture_id = l.id
+                    WHERE lp.student_id=%s AND lp.completed=1 AND l.course_id=%s
+                    """,
+                    (session["user_id"], course_id)
+                )
+                completed_lectures = [row[0] for row in cursor.fetchall()]
+
+                cursor.execute(
+                    "SELECT COUNT(*) FROM lectures WHERE course_id=%s",
+                    (course_id,)
+                )
+                course_total_lectures = cursor.fetchone()[0]
+
                 # Generate PDF
                 generate_certificate(
                     session["name"],
                     session["course"],
                     percentage,
-                    pdf_file
+                    pdf_file,
+                    completed_lectures=completed_lectures,
+                    total_lectures=course_total_lectures
                 )
 
                 # Save Certificate
