@@ -647,9 +647,20 @@ def chatbot_ask():
             )
             answer = response.text
             break
-        except genai_errors.ServerError:
+        except genai_errors.ServerError as e:
+            print(f"[chatbot] Gemini server error (attempt {attempt + 1}/3): {e}")
             time.sleep(1.5 * (attempt + 1))
-        except Exception:
+        except genai_errors.ClientError as e:
+            if e.code == 429:
+                print(f"[chatbot] Gemini quota/rate limit exceeded: {e}")
+                cursor.close()
+                return jsonify({
+                    "error": "The AI has hit its daily usage limit. Please try again later."
+                }), 429
+            print(f"[chatbot] Gemini client error: {e}")
+            break
+        except Exception as e:
+            print(f"[chatbot] Unexpected error: {e}")
             break
 
     if answer is None:
@@ -817,9 +828,17 @@ Return ONLY a JSON object, no markdown formatting, no extra text, in this exact 
                     q["correct_answer"] = q["correct_answer"].strip().upper()[:1]
                 return questions
 
-        except genai_errors.ServerError:
+        except genai_errors.ServerError as e:
+            print(f"[quiz] Gemini server error (attempt {attempt + 1}/3): {e}")
             time.sleep(1.5 * (attempt + 1))
-        except Exception:
+        except genai_errors.ClientError as e:
+            if e.code == 429:
+                print(f"[quiz] Gemini quota/rate limit exceeded: {e}")
+                return "quota_exceeded"
+            print(f"[quiz] Gemini client error: {e}")
+            break
+        except Exception as e:
+            print(f"[quiz] Unexpected error generating quiz: {e}")
             continue
 
     return None
@@ -849,6 +868,9 @@ def quiz():
         return "Quiz not found"
 
     questions = generate_quiz_questions(session["course"])
+
+    if questions == "quota_exceeded":
+        return "The AI question generator has hit its daily usage limit. Please try again later or use a different API key."
 
     if not questions:
         return "Could not generate quiz questions right now. Please try again in a moment."
