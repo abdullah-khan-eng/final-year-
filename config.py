@@ -10,5 +10,5 @@ class Config:
     MYSQL_PASSWORD = ""
     MYSQL_DB = "ai_learning_assistant"
 
-    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-    GEMINI_MODEL = "gemini-2.5-flash"
+    ZAI_API_KEY = os.environ.get("ZAI_API_KEY", "")
+    ZAI_MODEL = "glm-4.7-flash"

@@ -11,14 +11,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 There is no `requirements.txt`, no virtualenv checked in. Install manually before running:
 
 ```
-pip install flask flask-mysqldb flask-bcrypt reportlab google-genai
+pip install flask flask-mysqldb flask-bcrypt reportlab zai-sdk
 ```
 
 `flask-mysqldb` requires a working `MySQLdb`/`mysqlclient` build, which needs MySQL client libraries present on the system — this is the most likely install failure point on Windows.
 
 Database: a local MySQL server must be running with a database matching `config.py` (`ai_learning_assistant`, host `localhost`, user `root`, empty password). Run `mysql -u root < schema.sql` to create the schema and seed the 6 courses (matching the registration form's dropdown) with lectures and quizzes.
 
-The AI chatbot (`/chatbot`) calls the Gemini API and requires a `GEMINI_API_KEY` environment variable to be set before starting the app — `config.py` reads it via `os.environ.get`, it is not hardcoded.
+The AI chatbot (`/chatbot`) and quiz question generator (`/quiz`) call the Z.AI API (free `glm-4.7-flash` model) and require a `ZAI_API_KEY` environment variable to be set before starting the app — `config.py` reads it via `os.environ.get`, it is not hardcoded.
 
 Run the app:
 ```

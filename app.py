@@ -7,9 +7,8 @@ from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from datetime import datetime
-from google import genai
-from google.genai import types
-from google.genai import errors as genai_errors
+from zai import ZaiClient
+from zai.core import APIStatusError, APITimeoutError
 import os
 import time
 import json
@@ -149,7 +148,7 @@ app.config.from_object(Config)
 
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
-gemini_client = genai.Client(api_key=Config.GEMINI_API_KEY)
+zai_client = ZaiClient(api_key=Config.ZAI_API_KEY)
 
 
 @app.route("/")
@@ -634,30 +633,37 @@ def chatbot_ask():
 
     for attempt in range(3):
         try:
-            response = gemini_client.models.generate_content(
-                model=Config.GEMINI_MODEL,
-                contents=question,
-                config=types.GenerateContentConfig(
-                    system_instruction=(
-                        f"You are an AI tutor helping a student enrolled in the course "
-                        f"'{course}'. Answer the student's question in detail, tailored "
-                        f"to this course, in clear and simple language."
-                    )
-                )
+            response = zai_client.chat.completions.create(
+                model=Config.ZAI_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            f"You are an AI tutor helping a student enrolled in the course "
+                            f"'{course}'. Answer the student's question in detail, tailored "
+                            f"to this course, in clear and simple language."
+                        )
+                    },
+                    {"role": "user", "content": question}
+                ]
             )
-            answer = response.text
+            answer = response.choices[0].message.content
             break
-        except genai_errors.ServerError as e:
-            print(f"[chatbot] Gemini server error (attempt {attempt + 1}/3): {e}")
+        except APITimeoutError as e:
+            print(f"[chatbot] Z.AI timeout (attempt {attempt + 1}/3): {e}")
             time.sleep(1.5 * (attempt + 1))
-        except genai_errors.ClientError as e:
-            if e.code == 429:
-                print(f"[chatbot] Gemini quota/rate limit exceeded: {e}")
+        except APIStatusError as e:
+            if e.status_code == 429:
+                print(f"[chatbot] Z.AI quota/rate limit exceeded: {e}")
                 cursor.close()
                 return jsonify({
-                    "error": "The AI has hit its daily usage limit. Please try again later."
+                    "error": "The AI has hit its usage limit. Please try again later."
                 }), 429
-            print(f"[chatbot] Gemini client error: {e}")
+            if e.status_code >= 500:
+                print(f"[chatbot] Z.AI server error (attempt {attempt + 1}/3): {e}")
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            print(f"[chatbot] Z.AI client error: {e}")
             break
         except Exception as e:
             print(f"[chatbot] Unexpected error: {e}")
@@ -809,15 +815,15 @@ Return ONLY a JSON object, no markdown formatting, no extra text, in this exact 
 
     for attempt in range(3):
         try:
-            response = gemini_client.models.generate_content(
-                model=Config.GEMINI_MODEL,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json"
-                )
+            response = zai_client.chat.completions.create(
+                model=Config.ZAI_MODEL,
+                messages=[
+                    {"role": "user", "content": prompt + "\n\nRespond with JSON only."}
+                ],
+                response_format={"type": "json_object"}
             )
 
-            raw = response.text.strip()
+            raw = response.choices[0].message.content.strip()
             raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
 
             data = json.loads(raw)
@@ -828,14 +834,18 @@ Return ONLY a JSON object, no markdown formatting, no extra text, in this exact 
                     q["correct_answer"] = q["correct_answer"].strip().upper()[:1]
                 return questions
 
-        except genai_errors.ServerError as e:
-            print(f"[quiz] Gemini server error (attempt {attempt + 1}/3): {e}")
+        except APITimeoutError as e:
+            print(f"[quiz] Z.AI timeout (attempt {attempt + 1}/3): {e}")
             time.sleep(1.5 * (attempt + 1))
-        except genai_errors.ClientError as e:
-            if e.code == 429:
-                print(f"[quiz] Gemini quota/rate limit exceeded: {e}")
+        except APIStatusError as e:
+            if e.status_code == 429:
+                print(f"[quiz] Z.AI quota/rate limit exceeded: {e}")
                 return "quota_exceeded"
-            print(f"[quiz] Gemini client error: {e}")
+            if e.status_code >= 500:
+                print(f"[quiz] Z.AI server error (attempt {attempt + 1}/3): {e}")
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            print(f"[quiz] Z.AI client error: {e}")
             break
         except Exception as e:
             print(f"[quiz] Unexpected error generating quiz: {e}")
