@@ -1,63 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>{{ quiz_title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        .quiz-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+        .quiz-card{
+            max-width:620px;width:100%;
+            background:var(--surface-2);border:1px solid var(--border-strong);
+            border-radius:20px;padding:36px;
+        }
+        .quiz-top h1{font-family:'Sora';font-size:22px;margin-bottom:20px}
+        .quiz-progress{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+        .quiz-progress span{font-size:13px;color:var(--text-dim);white-space:nowrap}
+        .quiz-progress-bar{flex:1;height:6px;border-radius:6px;background:rgba(255,255,255,0.08);overflow:hidden}
+        .quiz-progress-fill{height:100%;background:var(--grad-1);border-radius:6px;transition:width .3s ease}
+        .quiz-timer{
+            display:inline-flex;align-items:center;gap:8px;margin:16px 0 24px;
+            padding:8px 16px;border-radius:100px;font-weight:600;font-size:14px;
+            background:rgba(139,92,246,0.12);border:1px solid var(--border-strong);color:var(--text);
+        }
+        .quiz-timer.danger{background:rgba(244,114,182,0.15);border-color:var(--pink);color:var(--pink)}
+        .quiz-question{font-size:18px;margin-bottom:22px;line-height:1.5}
+        .quiz-options{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+        .quiz-option{
+            display:flex;align-items:center;gap:14px;
+            padding:16px 18px;border-radius:14px;cursor:pointer;
+            background:rgba(255,255,255,0.03);border:1px solid var(--border-strong);
+            transition:all .2s ease;user-select:none;
+        }
+        .quiz-option:hover{background:rgba(139,92,246,0.1);border-color:var(--violet)}
+        .quiz-option.selected{background:rgba(139,92,246,0.18);border-color:var(--violet-bright)}
+        .quiz-option-letter{
+            width:32px;height:32px;flex-shrink:0;border-radius:10px;
+            display:grid;place-items:center;font-weight:700;font-size:14px;
+            background:rgba(255,255,255,0.08);color:var(--text-dim);
+        }
+        .quiz-option.selected .quiz-option-letter{background:var(--grad-1);color:#fff}
+        .quiz-option-text{font-size:15px}
+        .quiz-next-btn{width:100%;justify-content:center}
+    </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="quiz-page">
+  <div class="quiz-card">
 
-    <h1>{{ quiz_title }}</h1>
-
-    <form action="/submit_quiz" method="POST">
-
-        {% for q in questions %}
-
-        <div class="dash-list-box">
-
-            <h3>Q{{ loop.index }}. {{ q[2] }}</h3>
-
-            <label>
-                <input type="radio" name="question{{ q[0] }}" value="A">
-                {{ q[3] }}
-            </label>
-
-            <br><br>
-
-            <label>
-                <input type="radio" name="question{{ q[0] }}" value="B">
-                {{ q[4] }}
-            </label>
-
-            <br><br>
-
-            <label>
-                <input type="radio" name="question{{ q[0] }}" value="C">
-                {{ q[5] }}
-            </label>
-
-            <br><br>
-
-            <label>
-                <input type="radio" name="question{{ q[0] }}" value="D">
-                {{ q[6] }}
-            </label>
-
+    <div class="quiz-top">
+        <h1>{{ quiz_title }}</h1>
+        <div class="quiz-progress">
+            <span id="quizProgressText">Question 1 of {{ questions|length }}</span>
+            <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
         </div>
+        <div class="quiz-timer" id="quizTimer">
+            <i class="fa-solid fa-clock"></i>
+            <span id="quizTimerText">45</span>s left
+        </div>
+    </div>
 
-        <br>
+    <div id="quizQuestionArea"></div>
 
+    <form id="quizForm" action="{{ url_for('submit_quiz') }}" method="POST" style="display:none">
+        {% for q in questions %}
+        <input type="hidden" name="answer_{{ loop.index0 }}" id="answer_{{ loop.index0 }}">
         {% endfor %}
-
-        <button type="submit" class="btn-primary">
-            Submit Quiz
-        </button>
-
     </form>
 
+  </div>
 </div>
+
+<script>
+    const QUIZ_QUESTIONS = {{ questions|tojson }};
+</script>
+<script src="{{ url_for('static', filename='quiz_runner.js') }}"></script>
 
 </body>
 </html>

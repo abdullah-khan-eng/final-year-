@@ -9,6 +9,7 @@ from google.genai import types
 from google.genai import errors as genai_errors
 import os
 import time
+import json
 def generate_certificate(student_name, course_name, percentage, filename):
 
     os.makedirs("static/certificates", exist_ok=True)
@@ -689,6 +690,51 @@ def complete_lecture(lecture_id):
 
     return redirect(url_for("lectures"))  
 
+def generate_quiz_questions(course_name, num_questions=5):
+    prompt = f"""Generate exactly {num_questions} multiple choice questions to test a
+student's understanding of the course "{course_name}".
+
+Rules:
+- Each question must have exactly 4 answer options.
+- All 4 options must be plausible and course-relevant (no joke/unrelated options like
+  "a cooking technique" or "a sports strategy") so the question genuinely tests knowledge.
+- Only one option is correct.
+- Vary the correct answer letter across questions, don't always make it the same letter.
+
+Return ONLY a JSON object, no markdown formatting, no extra text, in this exact structure:
+{{"questions": [
+  {{"question": "...", "option_a": "...", "option_b": "...", "option_c": "...", "option_d": "...", "correct_answer": "A"}}
+]}}"""
+
+    for attempt in range(3):
+        try:
+            response = gemini_client.models.generate_content(
+                model=Config.GEMINI_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                )
+            )
+
+            raw = response.text.strip()
+            raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+
+            data = json.loads(raw)
+            questions = data["questions"]
+
+            if len(questions) >= 1:
+                for q in questions:
+                    q["correct_answer"] = q["correct_answer"].strip().upper()[:1]
+                return questions
+
+        except genai_errors.ServerError:
+            time.sleep(1.5 * (attempt + 1))
+        except Exception:
+            continue
+
+    return None
+
+
 @app.route("/quiz")
 def quiz():
 
@@ -697,7 +743,7 @@ def quiz():
 
     cursor = mysql.connection.cursor()
 
-    # Student ke course ka quiz
+    # Student ke course ka quiz (for the quiz_id used by quiz_results)
     cursor.execute("""
         SELECT q.id,q.title
         FROM quiz q
@@ -707,26 +753,27 @@ def quiz():
 
     quiz = cursor.fetchone()
 
+    cursor.close()
+
     if not quiz:
-        cursor.close()
         return "Quiz not found"
 
-    quiz_id = quiz[0]
+    questions = generate_quiz_questions(session["course"])
 
-    # Quiz ke questions
-    cursor.execute("""
-        SELECT *
-        FROM quiz_questions
-        WHERE quiz_id=%s
-    """, (quiz_id,))
+    if not questions:
+        return "Could not generate quiz questions right now. Please try again in a moment."
 
-    questions = cursor.fetchall()
+    session["quiz_questions"] = questions
 
-    cursor.close()
+    # Strip correct_answer before sending to the browser
+    questions_for_client = [
+        {k: v for k, v in q.items() if k != "correct_answer"}
+        for q in questions
+    ]
 
     return render_template(
         "quiz.html",
-        questions=questions,
+        questions=questions_for_client,
         quiz_title=quiz[1]
     )
     
@@ -754,24 +801,24 @@ def submit_quiz():
 
     quiz_id = quiz[0]
 
-    # Quiz Questions
-    cursor.execute("""
-        SELECT *
-        FROM quiz_questions
-        WHERE quiz_id=%s
-    """, (quiz_id,))
+    # Quiz Questions (AI-generated, stored in session when /quiz was loaded)
+    questions = session.get("quiz_questions")
 
-    questions = cursor.fetchall()
+    if not questions:
+        cursor.close()
+        return "Quiz session expired. Please start the quiz again."
 
     total_questions = len(questions)
     marks = 0
 
-    for q in questions:
+    for i, q in enumerate(questions):
 
-        student_answer = request.form.get(f"question{q[0]}")
+        student_answer = request.form.get(f"answer_{i}")
 
-        if student_answer == q[7]:
+        if student_answer == q["correct_answer"]:
             marks += 1
+
+    session.pop("quiz_questions", None)
 
     percentage = 0
 
