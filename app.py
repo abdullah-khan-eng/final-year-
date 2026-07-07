@@ -6,7 +6,9 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from google import genai
 from google.genai import types
+from google.genai import errors as genai_errors
 import os
+import time
 def generate_certificate(student_name, course_name, percentage, filename):
 
     os.makedirs("static/certificates", exist_ok=True)
@@ -435,21 +437,35 @@ def chatbot_ask():
 
     course = session.get("course", "your course")
 
-    try:
-        response = gemini_client.models.generate_content(
-            model=Config.GEMINI_MODEL,
-            contents=question,
-            config=types.GenerateContentConfig(
-                system_instruction=(
-                    f"You are an AI tutor helping a student enrolled in the course "
-                    f"'{course}'. Answer the student's question in detail, tailored "
-                    f"to this course, in clear and simple language."
+    answer = None
+    last_error = None
+
+    for attempt in range(3):
+        try:
+            response = gemini_client.models.generate_content(
+                model=Config.GEMINI_MODEL,
+                contents=question,
+                config=types.GenerateContentConfig(
+                    system_instruction=(
+                        f"You are an AI tutor helping a student enrolled in the course "
+                        f"'{course}'. Answer the student's question in detail, tailored "
+                        f"to this course, in clear and simple language."
+                    )
                 )
             )
-        )
-        answer = response.text
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            answer = response.text
+            break
+        except genai_errors.ServerError as e:
+            last_error = e
+            time.sleep(1.5 * (attempt + 1))
+        except Exception as e:
+            last_error = e
+            break
+
+    if answer is None:
+        return jsonify({
+            "error": "The AI service is busy right now. Please try again in a moment."
+        }), 503
 
     return jsonify({"answer": answer})
 
