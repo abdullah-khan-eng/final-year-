@@ -51,47 +51,35 @@
 
 
 <!-- ================= AI CHATBOT ================= -->
-<section id="assistant">
-  <div class="container">
-    <div class="chatbot-wrap">
-      <div class="chatbot-info reveal">
-        <span class="sec-tag"><i class="fa-solid fa-robot"></i>AI Assistant</span>
-        <h2>Your Personal <span class="grad">AI Tutor</span></h2>
-        <p>Stuck on a concept? Need a code walkthrough? Our AI assistant is trained on every course in the library and available 24/7. Ask follow-up questions, request examples, and get explanations tailored to your skill level.</p>
-        <ul class="chat-features">
-          <li>
-            <div class="ic"><i class="fa-solid fa-bolt"></i></div>
-            <div class="txt">
-              <strong>Instant Detailed Answers</strong>
-              <span>Get comprehensive explanations in under 2 seconds</span>
-            </div>
-          </li>
-          <li>
-            <div class="ic"><i class="fa-solid fa-code"></i></div>
-            <div class="txt">
-              <strong>Code-Aware Intelligence</strong>
-              <span>Understands syntax, debugging, and best practices</span>
-            </div>
-          </li>
-          <li>
-            <div class="ic"><i class="fa-solid fa-layer-group"></i></div>
-            <div class="txt">
-              <strong>Context-Aware Responses</strong>
-              <span>Knows your course syllabus and learning progress</span>
-            </div>
-          </li>
-        </ul>
-        <button class="btn btn-primary" onclick="document.querySelector('.chat-input input').focus()">
-          <span>Ask a Question</span><i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
+<section id="assistant" class="chat-app-section">
+  <div class="chat-app">
 
-      <div class="chat-window reveal">
+    <!-- Sidebar -->
+    <aside class="chat-sidebar">
+        <button class="chat-new-btn" id="newChatBtn">
+            <i class="fa-solid fa-plus"></i>
+            New Chat
+        </button>
+
+        <div class="chat-history" id="chatHistory">
+            {% for conv in conversations %}
+            <div class="chat-history-item" data-id="{{ conv[0] }}">
+                <i class="fa-solid fa-message"></i>
+                <span>{{ conv[1] }}</span>
+            </div>
+            {% else %}
+            <p class="chat-history-empty">No previous chats yet</p>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- Main chat panel -->
+    <div class="chat-window chat-window-full">
         <div class="chat-header">
           <div class="chat-bot-avatar"><i class="fa-solid fa-robot"></i></div>
           <div class="chat-header-info">
             <strong>AI Assistant</strong>
-            <span>Online · GPT-4 Powered</span>
+            <span>Online · Gemini Powered</span>
           </div>
           <div class="chat-status">
             <span><i class="fa-solid fa-circle-info"></i>Course: {{ session['course'] }}</span>
@@ -107,16 +95,15 @@
         </div>
         <div class="chat-input">
           <input type="text" id="chatInput" placeholder="Ask anything about your course..." />
-          <button class="chat-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+          <button class="chat-send" id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
-      </div>
     </div>
+
   </div>
 </section>
 
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="{{ url_for('static', filename='common.js') }}"></script>
 <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 

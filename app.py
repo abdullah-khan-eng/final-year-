@@ -420,7 +420,68 @@ def chatbot():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    return render_template("chatbot.html")
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        """
+        SELECT id, title FROM chat_conversations
+        WHERE student_id=%s
+        ORDER BY created_at DESC
+        """,
+        (session["user_id"],)
+    )
+    conversations = cursor.fetchall()
+    cursor.close()
+
+    return render_template("chatbot.html", conversations=conversations)
+
+
+@app.route("/chatbot/new", methods=["POST"])
+def chatbot_new():
+
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        "INSERT INTO chat_conversations (student_id, title) VALUES (%s, %s)",
+        (session["user_id"], "New Chat")
+    )
+    mysql.connection.commit()
+    conversation_id = cursor.lastrowid
+    cursor.close()
+
+    return jsonify({"conversation_id": conversation_id, "title": "New Chat"})
+
+
+@app.route("/chatbot/conversation/<int:conversation_id>/messages")
+def chatbot_conversation_messages(conversation_id):
+
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    cursor = mysql.connection.cursor()
+
+    # Make sure this conversation belongs to the logged-in student
+    cursor.execute(
+        "SELECT id FROM chat_conversations WHERE id=%s AND student_id=%s",
+        (conversation_id, session["user_id"])
+    )
+    if not cursor.fetchone():
+        cursor.close()
+        return jsonify({"error": "Conversation not found"}), 404
+
+    cursor.execute(
+        """
+        SELECT role, content FROM chat_messages
+        WHERE conversation_id=%s
+        ORDER BY created_at ASC, id ASC
+        """,
+        (conversation_id,)
+    )
+    messages = [{"role": row[0], "content": row[1]} for row in cursor.fetchall()]
+    cursor.close()
+
+    return jsonify({"messages": messages})
 
 
 @app.route("/chatbot/ask", methods=["POST"])
@@ -429,16 +490,56 @@ def chatbot_ask():
     if "user_id" not in session:
         return jsonify({"error": "Not logged in"}), 401
 
-    question = request.get_json(silent=True) or {}
-    question = question.get("question", "").strip()
+    data = request.get_json(silent=True) or {}
+    question = data.get("question", "").strip()
+    conversation_id = data.get("conversation_id")
 
     if not question:
         return jsonify({"error": "Question is required"}), 400
 
+    cursor = mysql.connection.cursor()
+
+    # Verify (or create) the conversation for this student
+    conversation = None
+    if conversation_id:
+        cursor.execute(
+            "SELECT id, title FROM chat_conversations WHERE id=%s AND student_id=%s",
+            (conversation_id, session["user_id"])
+        )
+        conversation = cursor.fetchone()
+
+    if not conversation:
+        cursor.execute(
+            "INSERT INTO chat_conversations (student_id, title) VALUES (%s, %s)",
+            (session["user_id"], "New Chat")
+        )
+        mysql.connection.commit()
+        conversation_id = cursor.lastrowid
+        conversation_title = "New Chat"
+    else:
+        conversation_id = conversation[0]
+        conversation_title = conversation[1]
+
+    # Save the student's message
+    cursor.execute(
+        "INSERT INTO chat_messages (conversation_id, role, content) VALUES (%s, 'user', %s)",
+        (conversation_id, question)
+    )
+    mysql.connection.commit()
+
+    # Auto-title the conversation from the first message
+    if conversation_title == "New Chat":
+        new_title = question[:50] + ("..." if len(question) > 50 else "")
+        cursor.execute(
+            "UPDATE chat_conversations SET title=%s WHERE id=%s",
+            (new_title, conversation_id)
+        )
+        mysql.connection.commit()
+        conversation_title = new_title
+
     course = session.get("course", "your course")
 
     answer = None
-    last_error = None
 
     for attempt in range(3):
         try:
@@ -455,19 +556,30 @@ def chatbot_ask():
             )
             answer = response.text
             break
-        except genai_errors.ServerError as e:
-            last_error = e
+        except genai_errors.ServerError:
             time.sleep(1.5 * (attempt + 1))
-        except Exception as e:
-            last_error = e
+        except Exception:
             break
 
     if answer is None:
+        cursor.close()
         return jsonify({
             "error": "The AI service is busy right now. Please try again in a moment."
         }), 503
 
-    return jsonify({"answer": answer})
+    # Save the AI's response
+    cursor.execute(
+        "INSERT INTO chat_messages (conversation_id, role, content) VALUES (%s, 'bot', %s)",
+        (conversation_id, answer)
+    )
+    mysql.connection.commit()
+    cursor.close()
+
+    return jsonify({
+        "answer": answer,
+        "conversation_id": conversation_id,
+        "conversation_title": conversation_title
+    })
 
 
 @app.route("/lectures")

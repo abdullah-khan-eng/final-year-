@@ -80,6 +80,23 @@ CREATE TABLE IF NOT EXISTS certificates (
     FOREIGN KEY (course_id) REFERENCES courses(id)
 );
 
+CREATE TABLE IF NOT EXISTS chat_conversations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    title VARCHAR(255) DEFAULT 'New Chat',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    conversation_id INT NOT NULL,
+    role VARCHAR(10) NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id)
+);
+
 -- Seed data: matches the 5 courses offered on the registration form
 -- (Artificial Intelligence, Machine Learning, Web Development, Cloud Computing,
 -- Cyber Security), plus a Python Basics course used for early testing.
