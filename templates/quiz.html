@@ -77,7 +77,7 @@
 <script>
     const QUIZ_QUESTIONS = {{ questions|tojson }};
 </script>
-<script src="{{ url_for('static', filename='quiz_runner.js') }}"></script>
+<script src="{{ asset_url('quiz_runner.js') }}"></script>
 
 </body>
 </html>

@@ -151,6 +151,20 @@ bcrypt = Bcrypt(app)
 zai_client = ZaiClient(api_key=Config.ZAI_API_KEY)
 
 
+# Cache-busting for static assets: append the file's last-modified time as ?v=...
+# so browsers re-fetch a JS/CSS file whenever it actually changes, instead of
+# silently serving a stale cached copy.
+@app.context_processor
+def inject_asset_helper():
+    def asset_url(filename):
+        try:
+            version = int(os.path.getmtime(os.path.join(app.static_folder, filename)))
+        except OSError:
+            version = 0
+        return url_for("static", filename=filename, v=version)
+    return dict(asset_url=asset_url)
+
+
 @app.route("/")
 def home():
     cursor = mysql.connection.cursor()
