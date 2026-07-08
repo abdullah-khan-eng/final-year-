@@ -148,7 +148,7 @@ app.config.from_object(Config)
 
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
-zai_client = ZaiClient(api_key=Config.ZAI_API_KEY)
+zai_client = ZaiClient(api_key=Config.ZAI_API_KEY, timeout=30)
 
 
 # Cache-busting for static assets: append the file's last-modified time as ?v=...
@@ -827,7 +827,7 @@ Return ONLY a JSON object, no markdown formatting, no extra text, in this exact 
   {{"question": "...", "option_a": "...", "option_b": "...", "option_c": "...", "option_d": "...", "correct_answer": "A"}}
 ]}}"""
 
-    for attempt in range(3):
+    for attempt in range(2):
         try:
             response = zai_client.chat.completions.create(
                 model=Config.ZAI_MODEL,
@@ -849,23 +849,49 @@ Return ONLY a JSON object, no markdown formatting, no extra text, in this exact 
                 return questions
 
         except APITimeoutError as e:
-            print(f"[quiz] Z.AI timeout (attempt {attempt + 1}/3): {e}")
-            time.sleep(1.5 * (attempt + 1))
+            print(f"[quiz] Z.AI timeout (attempt {attempt + 1}/2): {e}")
+            time.sleep(1)
         except APIStatusError as e:
             if e.status_code == 429:
                 print(f"[quiz] Z.AI quota/rate limit exceeded: {e}")
                 return "quota_exceeded"
             if e.status_code >= 500:
-                print(f"[quiz] Z.AI server error (attempt {attempt + 1}/3): {e}")
-                time.sleep(1.5 * (attempt + 1))
+                print(f"[quiz] Z.AI server error (attempt {attempt + 1}/2): {e}")
+                time.sleep(1)
                 continue
             print(f"[quiz] Z.AI client error: {e}")
             break
         except Exception as e:
             print(f"[quiz] Unexpected error generating quiz: {e}")
-            continue
+            break
 
     return None
+
+
+def get_db_quiz_questions(quiz_id):
+    """Fallback questions from the DB, used when the AI generator is
+    rate-limited/slow/unavailable. Shaped exactly like the AI output so the
+    rest of the quiz + grading flow is unchanged."""
+    cursor = mysql.connection.cursor()
+    cursor.execute("""
+        SELECT question, option_a, option_b, option_c, option_d, correct_answer
+        FROM quiz_questions
+        WHERE quiz_id=%s
+    """, (quiz_id,))
+    rows = cursor.fetchall()
+    cursor.close()
+
+    return [
+        {
+            "question": r[0],
+            "option_a": r[1],
+            "option_b": r[2],
+            "option_c": r[3],
+            "option_d": r[4],
+            "correct_answer": (r[5] or "").strip().upper()[:1],
+        }
+        for r in rows
+    ]
 
 
 @app.route("/quiz")
@@ -893,11 +919,14 @@ def quiz():
 
     questions = generate_quiz_questions(session["course"])
 
-    if questions == "quota_exceeded":
-        return "The AI question generator has hit its daily usage limit. Please try again later or use a different API key."
+    # If the AI generator is rate-limited / slow / unavailable, fall back to the
+    # pre-seeded DB questions so the quiz always loads quickly (no long hang).
+    if questions == "quota_exceeded" or not questions:
+        print(f"[quiz] AI unavailable, falling back to DB questions for quiz {quiz[0]}")
+        questions = get_db_quiz_questions(quiz[0])
 
     if not questions:
-        return "Could not generate quiz questions right now. Please try again in a moment."
+        return "No quiz questions available for this course yet."
 
     session["quiz_questions"] = questions
 
